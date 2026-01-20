@@ -21,7 +21,7 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import InputDialog from "../components/InputDialog";
 import Icon from "../components/Icon";
 import { useBoardContext } from "../context/useBoardContext";
-import type { Task } from "../types/boardManagement.types";
+import type { Task } from "@shared/types";
 
 type RouteParams = {
   boardId: string;

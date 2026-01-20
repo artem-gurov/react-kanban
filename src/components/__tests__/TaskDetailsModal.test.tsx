@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import TaskDetailsModal from '../TaskDetailsModal';
-import type { Task } from '../../types/boardManagement.types';
+import type { Task } from '@shared/types';
 import { BoardProvider } from '../../context/BoardContext';
 
 const mockOnClose = jest.fn();

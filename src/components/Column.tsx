@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Task } from "../types/boardManagement.types";
+import type { Task } from "@shared/types";
 import TaskFormModal from "./TaskFormModal";
 import ConfirmDialog from "./ConfirmDialog";
 import Icon from "./Icon";

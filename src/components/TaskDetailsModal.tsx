@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Task } from "../types/boardManagement.types";
+import type { Task } from "@shared/types";
 import Modal from "./Modal";
 import ConfirmDialog from "./ConfirmDialog";
 import { getPriorityColors } from "../utils/priorityColors";

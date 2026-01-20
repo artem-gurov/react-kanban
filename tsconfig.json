@@ -1,39 +1,29 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     /* Language and Environment */
-    "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
 
     /* Modules */
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["shared/*"]
+    },
     "allowImportingTsExtensions": true,
 
     /* Emit */
     "noEmit": true,
-    "sourceMap": true,
-
-    /* Interop Constraints */
-    "isolatedModules": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-
-    /* Type Checking */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-
-    /* Skip Lib Check */
-    "skipLibCheck": true,
 
     /* Jest and Testing */
     "types": ["jest", "@testing-library/jest-dom", "node"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "build", "coverage"]
+  "exclude": ["node_modules", "dist", "build", "coverage"],
+  "references": [
+    { "path": "./shared" },
+    { "path": "./backend" }
+  ]
 }

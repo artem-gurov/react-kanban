@@ -1,4 +1,4 @@
-import type { Priority } from "../types/boardManagement.types";
+import type { Priority } from "@shared/types";
 
 export const getPriorityColors = (priority?: Priority) => {
   switch (priority) {

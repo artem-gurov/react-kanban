@@ -1,5 +1,5 @@
 import { createContext, useEffect, useReducer } from "react";
-import type { Board, Priority } from "../types/boardManagement.types";
+import type { Board, Priority } from "@shared/types";
 import { boardReducer } from "./reducer/boardReducer";
 
 export type BoardState = {

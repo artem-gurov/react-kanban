@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Task, Priority } from "../types/boardManagement.types";
+import type { Task, Priority } from "@shared/types";
 import Modal from "./Modal";
 
 type TaskFormModalProps = {

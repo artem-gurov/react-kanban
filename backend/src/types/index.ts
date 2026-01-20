@@ -20,3 +20,13 @@ export interface Board {
   columns: Column[];
   tasks: Record<string, Task>;
 }
+
+export interface BoardState {
+  boards: Board[];
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Task } from "../types/boardManagement.types";
+import type { Task } from "@shared/types";
 import { useBoardContext } from "../context/useBoardContext";
 import TaskFormModal from "./TaskFormModal";
 import ConfirmDialog from "./ConfirmDialog";

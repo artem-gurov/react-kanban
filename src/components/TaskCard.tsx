@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Priority } from "../types/boardManagement.types";
+import type { Priority } from "@shared/types";
 import { getPriorityColors } from "../utils/priorityColors";
 
 type TaskCardProps = {
