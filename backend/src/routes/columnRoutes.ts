@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { boardService } from "../services/boardService";
+import { boardService } from "../services/board/boardService";
+import { columnService } from "../services/board/columnService";
 import { ApiError } from "../middleware/errorHandler";
 import { asyncHandler } from "./asyncHandler";
 
@@ -13,8 +14,8 @@ router.post(
     if (!title) {
       throw new ApiError(400, "Column title is required");
     }
-    boardService.addColumn(req.params.boardId!, title);
-    const board = boardService.getById(req.params.boardId!);
+    await columnService.addColumn(req.params.boardId!, title);
+    const board = await boardService.getById(req.params.boardId!);
     if (!board) {
       throw new ApiError(404, "Board not found");
     }
@@ -33,7 +34,7 @@ router.patch(
     if (!Array.isArray(columnIds)) {
       throw new ApiError(400, "columnIds array is required");
     }
-    const board = boardService.reorderColumns(req.params.boardId!, columnIds);
+    const board = await columnService.reorderColumns(req.params.boardId!, columnIds);
     if (!board) {
       throw new ApiError(404, "Board not found");
     }
@@ -52,7 +53,7 @@ router.patch(
     if (!title) {
       throw new ApiError(400, "Column title is required");
     }
-    const column = boardService.updateColumn(
+    const column = await columnService.updateColumn(
       req.params.boardId!,
       req.params.columnId!,
       title
@@ -71,14 +72,14 @@ router.patch(
 router.delete(
   "/:columnId",
   asyncHandler(async (req, res) => {
-    const deleted = boardService.deleteColumn(
+    const deleted = await columnService.deleteColumn(
       req.params.boardId!,
       req.params.columnId!
     );
     if (!deleted) {
       throw new ApiError(404, "Board or column not found");
     }
-    const board = boardService.getById(req.params.boardId!);
+    const board = await boardService.getById(req.params.boardId!);
     if (!board) {
       throw new ApiError(404, "Board not found");
     }

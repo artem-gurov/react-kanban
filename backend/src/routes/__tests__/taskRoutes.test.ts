@@ -1,12 +1,15 @@
 import request from "supertest";
 import express from "express";
 import { taskRoutes } from "../taskRoutes";
-import { boardService } from "../../services/boardService";
+import { boardService } from "../../services/board/boardService";
+import { taskService } from "../../services/board/taskService";
 import type { Board, Task } from "@shared/types";
 
-jest.mock("../../services/boardService");
+jest.mock("../../services/board/boardService");
+jest.mock("../../services/board/taskService");
 
 const mockedBoardService = jest.mocked(boardService);
+const mockedTaskService = jest.mocked(taskService);
 
 const app = express();
 app.use(express.json());
@@ -36,8 +39,8 @@ describe("Task Routes", () => {
 
   describe("POST /:boardId/columns/:columnId/tasks", () => {
     it("should add a task to a column", async () => {
-      mockedBoardService.addTask.mockReturnValue({ id: "task-2", title: "New Task", description: "A new task", priority: "high" });
-      mockedBoardService.getById.mockReturnValue(sampleBoard);
+      mockedTaskService.addTask.mockResolvedValue({ id: "task-2", title: "New Task", description: "A new task", priority: "high" });
+      mockedBoardService.getById.mockResolvedValue(sampleBoard);
 
       const response = await request(app)
         .post(`/${boardId}/columns/${columnId}/tasks`)
@@ -52,7 +55,7 @@ describe("Task Routes", () => {
       expect(response.body.data.id).toBe(sampleBoard.id);
       expect(response.body.data.columns).toBeDefined();
       expect(response.body.data.tasks).toBeDefined();
-      expect(mockedBoardService.addTask).toHaveBeenCalledWith(boardId, columnId, {
+      expect(mockedTaskService.addTask).toHaveBeenCalledWith(boardId, columnId, {
         title: "New Task",
         description: "A new task",
         priority: "high",
@@ -66,19 +69,19 @@ describe("Task Routes", () => {
         .send({ description: "No title" });
 
       expect(response.status).toBe(400);
-      expect(mockedBoardService.addTask).not.toHaveBeenCalled();
+      expect(mockedTaskService.addTask).not.toHaveBeenCalled();
     });
 
     it("should return 404 for non-existent board or column", async () => {
-      mockedBoardService.addTask.mockReturnValue(undefined as any);
-      mockedBoardService.getById.mockReturnValue(undefined);
+      mockedTaskService.addTask.mockResolvedValue(undefined);
+      mockedBoardService.getById.mockResolvedValue(undefined);
 
       const response = await request(app)
         .post(`/non-existent/columns/${columnId}/tasks`)
         .send({ title: "New Task" });
 
       expect(response.status).toBe(404);
-      expect(mockedBoardService.addTask).toHaveBeenCalled();
+      expect(mockedTaskService.addTask).toHaveBeenCalled();
     });
   });
 
@@ -86,7 +89,7 @@ describe("Task Routes", () => {
     it("should update a task", async () => {
       const existingTask = sampleBoard.tasks[taskId]!;
       const updatedTask: Task = { ...existingTask, title: "Updated Task" };
-      mockedBoardService.updateTask.mockReturnValue(updatedTask);
+      mockedTaskService.updateTask.mockResolvedValue(updatedTask);
 
       const response = await request(app)
         .patch(`/${boardId}/tasks/${taskId}`)
@@ -99,7 +102,7 @@ describe("Task Routes", () => {
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.data.title).toBe("Updated Task");
-      expect(mockedBoardService.updateTask).toHaveBeenCalledWith(boardId, taskId, {
+      expect(mockedTaskService.updateTask).toHaveBeenCalledWith(boardId, taskId, {
         title: "Updated Task",
         description: "Updated description",
         priority: "low",
@@ -112,25 +115,25 @@ describe("Task Routes", () => {
         .send({ description: "No title" });
 
       expect(response.status).toBe(400);
-      expect(mockedBoardService.updateTask).not.toHaveBeenCalled();
+      expect(mockedTaskService.updateTask).not.toHaveBeenCalled();
     });
 
     it("should return 404 for non-existent task", async () => {
-      mockedBoardService.updateTask.mockReturnValue(undefined as any);
+      mockedTaskService.updateTask.mockResolvedValue(undefined);
 
       const response = await request(app)
         .patch(`/${boardId}/tasks/non-existent`)
         .send({ title: "Updated" });
 
       expect(response.status).toBe(404);
-      expect(mockedBoardService.updateTask).toHaveBeenCalled();
+      expect(mockedTaskService.updateTask).toHaveBeenCalled();
     });
   });
 
   describe("DELETE /:boardId/tasks/:taskId", () => {
     it("should delete a task", async () => {
-      mockedBoardService.deleteTask.mockReturnValue(true);
-      mockedBoardService.getById.mockReturnValue(sampleBoard);
+      mockedTaskService.deleteTask.mockResolvedValue(true);
+      mockedBoardService.getById.mockResolvedValue(sampleBoard);
       const newTaskId = "task-delete";
 
       const response = await request(app).delete(
@@ -141,20 +144,20 @@ describe("Task Routes", () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data.id).toBe(sampleBoard.id);
       expect(response.body.data.columns).toBeDefined();
-      expect(mockedBoardService.deleteTask).toHaveBeenCalledWith(boardId, newTaskId);
+      expect(mockedTaskService.deleteTask).toHaveBeenCalledWith(boardId, newTaskId);
       expect(mockedBoardService.getById).toHaveBeenCalledWith(boardId);
     });
 
     it("should return 404 for non-existent task", async () => {
-      mockedBoardService.deleteTask.mockReturnValue(false);
-      mockedBoardService.getById.mockReturnValue(undefined);
+      mockedTaskService.deleteTask.mockResolvedValue(false);
+      mockedBoardService.getById.mockResolvedValue(undefined);
 
       const response = await request(app).delete(
         `/${boardId}/tasks/non-existent`
       );
 
       expect(response.status).toBe(404);
-      expect(mockedBoardService.deleteTask).toHaveBeenCalledWith(boardId, "non-existent");
+      expect(mockedTaskService.deleteTask).toHaveBeenCalledWith(boardId, "non-existent");
     });
   });
 
@@ -162,15 +165,15 @@ describe("Task Routes", () => {
     it("should move a task to another column", async () => {
       const sourceColumnId = sampleBoard.columns[0]!.id;
       const destColumnId = sampleBoard.columns[1]!.id;
-      mockedBoardService.moveTask.mockReturnValue(sampleBoard);
-      const task = { id: "task-move" } as any;
-      mockedBoardService.getById.mockReturnValue({
+      mockedTaskService.moveTask.mockResolvedValue(sampleBoard);
+      const task = { id: "task-move" } as Task;
+      mockedBoardService.getById.mockResolvedValue({
         ...sampleBoard,
         columns: sampleBoard.columns.map((c, idx) =>
           idx === 0 ? { ...c, taskIds: [task.id] } : c
         ),
-      } as any);
-      mockedBoardService.addTask.mockReturnValue(task as any);
+      });
+      mockedTaskService.addTask.mockResolvedValue(task);
 
       const response = await request(app)
         .patch(`/${boardId}/tasks/${task?.id}/move`)
@@ -182,7 +185,7 @@ describe("Task Routes", () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(mockedBoardService.moveTask).toHaveBeenCalledWith(
+      expect(mockedTaskService.moveTask).toHaveBeenCalledWith(
         boardId,
         task?.id,
         sourceColumnId,
@@ -197,11 +200,11 @@ describe("Task Routes", () => {
         .send({ sourceColumnId: "col-1" });
 
       expect(response.status).toBe(400);
-      expect(mockedBoardService.moveTask).not.toHaveBeenCalled();
+      expect(mockedTaskService.moveTask).not.toHaveBeenCalled();
     });
 
     it("should return 404 for non-existent board or columns", async () => {
-      mockedBoardService.moveTask.mockReturnValue(undefined as any);
+      mockedTaskService.moveTask.mockResolvedValue(undefined);
 
       const response = await request(app)
         .patch(`/${boardId}/tasks/${taskId}/move`)
@@ -212,7 +215,7 @@ describe("Task Routes", () => {
         });
 
       expect(response.status).toBe(404);
-      expect(mockedBoardService.moveTask).toHaveBeenCalled();
+      expect(mockedTaskService.moveTask).toHaveBeenCalled();
     });
   });
 });

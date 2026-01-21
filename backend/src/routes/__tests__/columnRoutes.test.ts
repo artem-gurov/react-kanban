@@ -1,11 +1,14 @@
 import request from "supertest";
 import express from "express";
 import { columnRoutes } from "../columnRoutes";
-import { boardService } from "../../services/boardService";
+import { boardService } from "../../services/board/boardService";
+import { columnService } from "../../services/board/columnService";
 
-jest.mock("../../services/boardService");
+jest.mock("../../services/board/boardService");
+jest.mock("../../services/board/columnService");
 
 const mockedBoardService = jest.mocked(boardService);
+const mockedColumnService = jest.mocked(columnService);
 
 const app = express();
 app.use(express.json());
@@ -32,8 +35,8 @@ describe("Column Routes", () => {
 
   describe("POST /:boardId/columns", () => {
     it("should add a column to a board", async () => {
-      mockedBoardService.addColumn.mockReturnValue({ id: "col-3", title: "Test Column", taskIds: [] });
-      mockedBoardService.getById.mockReturnValue(sampleBoard);
+      mockedColumnService.addColumn.mockResolvedValue({ id: "col-3", title: "Test Column", taskIds: [] });
+      mockedBoardService.getById.mockResolvedValue(sampleBoard);
 
       const response = await request(app)
         .post(`/${boardId}/columns`)
@@ -44,7 +47,7 @@ describe("Column Routes", () => {
       expect(response.body.data.id).toBe(sampleBoard.id);
       expect(response.body.data.columns).toBeDefined();
       expect(response.body.data.tasks).toBeDefined();
-      expect(mockedBoardService.addColumn).toHaveBeenCalledWith(boardId, "Test Column");
+      expect(mockedColumnService.addColumn).toHaveBeenCalledWith(boardId, "Test Column");
       expect(mockedBoardService.getById).toHaveBeenCalledWith(boardId);
     });
 
@@ -54,26 +57,26 @@ describe("Column Routes", () => {
         .send({});
 
       expect(response.status).toBe(400);
-      expect(mockedBoardService.addColumn).not.toHaveBeenCalled();
+      expect(mockedColumnService.addColumn).not.toHaveBeenCalled();
     });
 
     it("should return 404 for non-existent board", async () => {
-      mockedBoardService.addColumn.mockReturnValue(undefined);
-      mockedBoardService.getById.mockReturnValue(undefined);
+      mockedColumnService.addColumn.mockResolvedValue(undefined);
+      mockedBoardService.getById.mockResolvedValue(undefined);
 
       const response = await request(app)
         .post("/non-existent/columns")
         .send({ title: "Test Column" });
 
       expect(response.status).toBe(404);
-      expect(mockedBoardService.addColumn).toHaveBeenCalledWith("non-existent", "Test Column");
+      expect(mockedColumnService.addColumn).toHaveBeenCalledWith("non-existent", "Test Column");
     });
   });
 
   describe("PATCH /:boardId/columns/:columnId", () => {
     it("should update a column", async () => {
       const columnId = sampleBoard.columns[0]!.id;
-      mockedBoardService.updateColumn.mockReturnValue({ id: columnId, title: "Updated Column", taskIds: [] });
+      mockedColumnService.updateColumn.mockResolvedValue({ id: columnId, title: "Updated Column", taskIds: [] });
 
       const response = await request(app)
         .patch(`/${boardId}/columns/${columnId}`)
@@ -82,25 +85,25 @@ describe("Column Routes", () => {
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.data.title).toBe("Updated Column");
-      expect(mockedBoardService.updateColumn).toHaveBeenCalledWith(boardId, columnId, "Updated Column");
+      expect(mockedColumnService.updateColumn).toHaveBeenCalledWith(boardId, columnId, "Updated Column");
     });
 
     it("should return 404 for non-existent column", async () => {
-      mockedBoardService.updateColumn.mockReturnValue(undefined);
+      mockedColumnService.updateColumn.mockResolvedValue(undefined);
 
       const response = await request(app)
         .patch(`/${boardId}/columns/non-existent`)
         .send({ title: "Updated" });
 
       expect(response.status).toBe(404);
-      expect(mockedBoardService.updateColumn).toHaveBeenCalledWith(boardId, "non-existent", "Updated");
+      expect(mockedColumnService.updateColumn).toHaveBeenCalledWith(boardId, "non-existent", "Updated");
     });
   });
 
   describe("DELETE /:boardId/columns/:columnId", () => {
     it("should delete a column", async () => {
-      mockedBoardService.deleteColumn.mockReturnValue(true);
-      mockedBoardService.getById.mockReturnValue(sampleBoard);
+      mockedColumnService.deleteColumn.mockResolvedValue(true);
+      mockedBoardService.getById.mockResolvedValue(sampleBoard);
       const columnId = "col-delete";
 
       const response = await request(app).delete(
@@ -111,27 +114,27 @@ describe("Column Routes", () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data.id).toBe(sampleBoard.id);
       expect(response.body.data.columns).toBeDefined();
-      expect(mockedBoardService.deleteColumn).toHaveBeenCalledWith(boardId, columnId);
+      expect(mockedColumnService.deleteColumn).toHaveBeenCalledWith(boardId, columnId);
       expect(mockedBoardService.getById).toHaveBeenCalledWith(boardId);
     });
 
     it("should return 404 for non-existent column", async () => {
-      mockedBoardService.deleteColumn.mockReturnValue(false);
-      mockedBoardService.getById.mockReturnValue(undefined);
+      mockedColumnService.deleteColumn.mockResolvedValue(false);
+      mockedBoardService.getById.mockResolvedValue(undefined);
 
       const response = await request(app).delete(
         `/${boardId}/columns/non-existent`
       );
 
       expect(response.status).toBe(404);
-      expect(mockedBoardService.deleteColumn).toHaveBeenCalledWith(boardId, "non-existent");
+      expect(mockedColumnService.deleteColumn).toHaveBeenCalledWith(boardId, "non-existent");
     });
   });
 
   describe("PATCH /:boardId/columns/reorder", () => {
     it("should reorder columns", async () => {
       const columnIds = sampleBoard.columns.map((c) => c.id).reverse();
-      mockedBoardService.reorderColumns.mockReturnValue({ ...sampleBoard, columns: [...sampleBoard.columns].reverse() });
+      mockedColumnService.reorderColumns.mockResolvedValue({ ...sampleBoard, columns: [...sampleBoard.columns].reverse() });
 
       const response = await request(app)
         .patch(`/${boardId}/columns/reorder`)
@@ -139,7 +142,7 @@ describe("Column Routes", () => {
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(mockedBoardService.reorderColumns).toHaveBeenCalledWith(boardId, columnIds);
+      expect(mockedColumnService.reorderColumns).toHaveBeenCalledWith(boardId, columnIds);
     });
 
     it("should return 400 if columnIds is not an array", async () => {
@@ -148,7 +151,7 @@ describe("Column Routes", () => {
         .send({ columnIds: "not-an-array" });
 
       expect(response.status).toBe(400);
-      expect(mockedBoardService.reorderColumns).not.toHaveBeenCalled();
+      expect(mockedColumnService.reorderColumns).not.toHaveBeenCalled();
     });
   });
 });

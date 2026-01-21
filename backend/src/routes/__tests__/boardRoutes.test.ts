@@ -1,9 +1,9 @@
 import request from "supertest";
 import express from "express";
 import { boardRoutes } from "../boardRoutes";
-import { boardService } from "../../services/boardService";
+import { boardService } from "../../services/board/boardService";
 
-jest.mock("../../services/boardService");
+jest.mock("../../services/board/boardService");
 
 const mockedBoardService = jest.mocked(boardService);
 
@@ -25,7 +25,7 @@ beforeEach(() => {
 describe("Board Routes", () => {
   describe("GET /api/boards", () => {
     it("should return all boards", async () => {
-      mockedBoardService.getAll.mockReturnValue([sampleBoard]);
+      mockedBoardService.getAll.mockResolvedValue([sampleBoard]);
 
       const response = await request(app).get("/api/boards");
       expect(response.status).toBe(200);
@@ -37,7 +37,7 @@ describe("Board Routes", () => {
 
   describe("GET /api/boards/:boardId", () => {
     it("should return a single board", async () => {
-      mockedBoardService.getById.mockReturnValue(sampleBoard);
+      mockedBoardService.getById.mockResolvedValue(sampleBoard);
       const boardId = sampleBoard.id;
 
       const response = await request(app).get(`/api/boards/${boardId}`);
@@ -48,7 +48,7 @@ describe("Board Routes", () => {
     });
 
     it("should return 404 for non-existent board", async () => {
-      mockedBoardService.getById.mockReturnValue(undefined);
+      mockedBoardService.getById.mockResolvedValue(undefined);
 
       const response = await request(app).get("/api/boards/non-existent-id");
       expect(response.status).toBe(404);
@@ -59,7 +59,7 @@ describe("Board Routes", () => {
   describe("POST /api/boards", () => {
     it("should create a new board", async () => {
       const createdBoard = { ...sampleBoard, id: "board-2", name: "New Test Board" };
-      mockedBoardService.create.mockReturnValue(createdBoard);
+      mockedBoardService.create.mockResolvedValue(createdBoard);
 
       const response = await request(app)
         .post("/api/boards")
@@ -85,7 +85,7 @@ describe("Board Routes", () => {
   describe("PATCH /api/boards/:boardId", () => {
     it("should update a board", async () => {
       const updatedBoard = { ...sampleBoard, name: "Updated Board Name" };
-      mockedBoardService.update.mockReturnValue(updatedBoard);
+      mockedBoardService.update.mockResolvedValue(updatedBoard);
       const boardId = sampleBoard.id;
 
       const response = await request(app)
@@ -99,7 +99,7 @@ describe("Board Routes", () => {
     });
 
     it("should return 404 for non-existent board", async () => {
-      mockedBoardService.update.mockReturnValue(undefined);
+      mockedBoardService.update.mockResolvedValue(undefined);
 
       const response = await request(app)
         .patch("/api/boards/non-existent-id")
@@ -123,7 +123,7 @@ describe("Board Routes", () => {
 
   describe("DELETE /api/boards/:boardId", () => {
     it("should delete a board", async () => {
-      mockedBoardService.delete.mockReturnValue(true);
+      mockedBoardService.delete.mockResolvedValue(true);
       const boardId = sampleBoard.id;
 
       const response = await request(app).delete(`/api/boards/${boardId}`);
@@ -135,7 +135,7 @@ describe("Board Routes", () => {
     });
 
     it("should return 404 for non-existent board", async () => {
-      mockedBoardService.delete.mockReturnValue(false);
+      mockedBoardService.delete.mockResolvedValue(false);
 
       const response = await request(app).delete("/api/boards/non-existent-id");
       expect(response.status).toBe(404);

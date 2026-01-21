@@ -1,16 +1,69 @@
 # Kanban Backend API
 
-Express + TypeScript REST API for the Kanban board.
+Express + TypeScript REST API for the Kanban board with MongoDB persistence.
 
-## Getting started
-- Install deps: `npm install`
-- Dev server: `npm run dev` (defaults to http://localhost:5000)
+## Quick Start with Docker (Recommended)
+
+The easiest way to run the backend and MongoDB together:
+
+```bash
+# From the project root
+docker-compose up -d
+
+# View logs
+docker-compose logs -f backend
+
+# Stop services
+docker-compose down
+```
+
+Backend will be available at `http://localhost:5000`, MongoDB at `localhost:27017`.
+
+To persist data across restarts, the MongoDB data is stored in a Docker volume (`mongodb_data`).
+
+## Development Setup
+
+### Prerequisites
+- Node.js 18+
+- MongoDB 5.0+ (running locally or via Docker)
+
+### Installation
+```bash
+npm install
+```
+
+### Configuration
+Create a `.env` file in the `backend/` directory (optional):
+```env
+PORT=5000
+CORS_ORIGIN=http://localhost:5173
+MONGODB_URI=mongodb://localhost:27017/kanban
+NODE_ENV=development
+```
+
+Or use the defaults:
+- `PORT`: 5000
+- `CORS_ORIGIN`: http://localhost:5173
+- `MONGODB_URI`: mongodb://localhost:27017/kanban
+- `NODE_ENV`: development
+
+### Running Locally
+- Dev server: `npm run dev` (with auto-reload)
+- Production: `npm run build && npm start`
 - Tests: `npm test`
-- Build: `npm run build`
 
-Config (see src/config.ts):
-- `PORT` (default 5000)
-- `CORS_ORIGIN` (default http://localhost:5173)
+### MongoDB Setup (Local Development)
+If running MongoDB locally without Docker:
+```bash
+# macOS/Linux
+mongod --dbpath /path/to/data
+
+# Windows
+mongod --dbpath C:\path\to\data
+
+# Or use standalone Docker container
+docker run -d -p 27017:27017 --name mongodb mongo:7
+```
 
 All API routes are under `/api`. All responses follow a discriminated union format:
 - **Success**: `{ success: true, data: T }`

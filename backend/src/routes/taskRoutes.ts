@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { boardService } from "../services/boardService";
+import { boardService } from "../services/board/boardService";
+import { taskService } from "../services/board/taskService";
 import { ApiError } from "../middleware/errorHandler";
 import { asyncHandler } from "./asyncHandler";
 
@@ -13,12 +14,12 @@ router.post(
     if (!title) {
       throw new ApiError(400, "Task title is required");
     }
-    boardService.addTask(
+    await taskService.addTask(
       req.params.boardId!,
       req.params.columnId!,
       { title, description, dueDate, priority }
     );
-    const board = boardService.getById(req.params.boardId!);
+    const board = await boardService.getById(req.params.boardId!);
     if (!board) {
       throw new ApiError(404, "Board not found");
     }
@@ -37,7 +38,7 @@ router.patch(
     if (!title) {
       throw new ApiError(400, "Task title is required");
     }
-    const task = boardService.updateTask(
+    const task = await taskService.updateTask(
       req.params.boardId!,
       req.params.taskId!,
       { title, description, dueDate, priority }
@@ -56,11 +57,11 @@ router.patch(
 router.delete(
   "/:taskId",
   asyncHandler(async (req, res) => {
-    const deleted = boardService.deleteTask(req.params.boardId!, req.params.taskId!);
+    const deleted = await taskService.deleteTask(req.params.boardId!, req.params.taskId!);
     if (!deleted) {
       throw new ApiError(404, "Board or task not found");
     }
-    const board = boardService.getById(req.params.boardId!);
+    const board = await boardService.getById(req.params.boardId!);
     if (!board) {
       throw new ApiError(404, "Board not found");
     }
@@ -83,7 +84,7 @@ router.patch(
     ) {
       throw new ApiError(400, "sourceColumnId, destinationColumnId, and destinationIndex are required");
     }
-    const board = boardService.moveTask(
+    const board = await taskService.moveTask(
       req.params.boardId!,
       req.params.taskId!,
       sourceColumnId,

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { boardService } from "../services/boardService";
+import { boardService } from "../services/board/boardService";
 import { ApiError } from "../middleware/errorHandler";
 import type { ApiResponse } from "@shared/types";
 import { asyncHandler } from "./asyncHandler";
@@ -10,7 +10,7 @@ const router = Router();
 router.get(
   "/",
   asyncHandler(async (_req, res) => {
-    const boards = boardService.getAll();
+    const boards = await boardService.getAll();
     const response: ApiResponse<typeof boards> = {
       success: true,
       data: boards,
@@ -23,7 +23,7 @@ router.get(
 router.get(
   "/:boardId",
   asyncHandler(async (req, res) => {
-    const board = boardService.getById(req.params.boardId!);
+    const board = await boardService.getById(req.params.boardId!);
     if (!board) {
       throw new ApiError(404, "Board not found");
     }
@@ -43,7 +43,7 @@ router.post(
     if (!name) {
       throw new ApiError(400, "Board name is required");
     }
-    const board = boardService.create(name);
+    const board = await boardService.create(name);
     res.status(201).json({
       success: true,
       data: board,
@@ -59,7 +59,7 @@ router.patch(
     if (!name) {
       throw new ApiError(400, "Board name is required");
     }
-    const board = boardService.update(req.params.boardId!, name);
+    const board = await boardService.update(req.params.boardId!, name);
     if (!board) {
       throw new ApiError(404, "Board not found");
     }
@@ -74,7 +74,7 @@ router.patch(
 router.delete(
   "/:boardId",
   asyncHandler(async (req, res) => {
-    const deleted = boardService.delete(req.params.boardId!);
+    const deleted = await boardService.delete(req.params.boardId!);
     if (!deleted) {
       throw new ApiError(404, "Board not found");
     }
