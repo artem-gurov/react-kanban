@@ -10,6 +10,7 @@ function App() {
       <Routes>
         <Route element={<AppLayout />}>
           <Route path="/" element={<BoardList />} />
+          <Route path="/boards" element={<BoardList />} />
           <Route path="/boards/:boardId" element={<Board />} />
           <Route path="/boards/:boardId/tasks/:taskId" element={<Board />} />
         </Route>

@@ -14,6 +14,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import Column from "../components/Column";
+import Spinner from "../components/Spinner";
 import TaskCard from "../components/TaskCard";
 import TaskDetailsModal from "../components/TaskDetailsModal";
 import TaskFormModal from "../components/TaskFormModal";
@@ -30,7 +31,15 @@ type RouteParams = {
 
 function Board() {
   const { boardId, taskId } = useParams<RouteParams>();
-  const { boards, dispatch } = useBoardContext();
+  const { boards, loadBoard, handleUpdateBoard, handleRemoveBoard, handleAddColumn, handleAddTask, dispatch } = useBoardContext();
+
+  useEffect(() => {
+    if (boardId) {
+      setIsLoading(true);
+      loadBoard(boardId).finally(() => setIsLoading(false));
+    }
+  }, [boardId, loadBoard]);
+
   const board = boards.find((b) => b.id === boardId);
   const navigate = useNavigate();
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -42,6 +51,7 @@ function Board() {
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<'task' | 'column' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -60,17 +70,26 @@ function Board() {
   }, [isEditingTitle, editedTitle]);
 
   if (!board) {
-    return <div>Board not found</div>;
+    return (
+      <>
+        {isLoading ?
+          (<div className="flex flex-1 items-center justify-center h-full" data-testid="board-loading">
+            <Spinner size={48} />
+          </div>)
+          :
+          (<div className="flex flex-1 items-center justify-center h-full" data-testid="board-not-found">
+            <p className="text-gray-600 text-lg">Board not found.</p>
+          </div>)
+        }
+      </>
+    );
   }
-
+console.log(boards);
   const task = taskId ? board.tasks[taskId] : undefined;
 
   const handleSaveTitle = () => {
     if (editedTitle.trim() && editedTitle !== board.name) {
-      dispatch({
-        type: "UPDATE_BOARD",
-        payload: { boardId: board.id, name: editedTitle.trim() },
-      });
+      handleUpdateBoard(board.id, editedTitle.trim());
     }
     setIsEditingTitle(false);
   };
@@ -326,16 +345,7 @@ function Board() {
                     },
                   })
                 }
-                onAddTask={(taskData) =>
-                  dispatch({
-                    type: "ADD_TASK",
-                    payload: {
-                      boardId: board.id,
-                      columnId: column.id,
-                      ...taskData,
-                    },
-                  })
-                }
+                onAddTask={(task) => handleAddTask(board.id, column.id, task)}
               >
                 {column.taskIds.map((taskId) => {
                   const task = board.tasks[taskId];
@@ -419,10 +429,7 @@ function Board() {
         isOpen={isDeleteBoardOpen}
         onClose={() => setIsDeleteBoardOpen(false)}
         onConfirm={() => {
-          dispatch({
-            type: "REMOVE_BOARD",
-            payload: { boardId: board.id },
-          });
+          handleRemoveBoard(board.id);
           navigate("/");
         }}
         title="Delete Board"
@@ -434,12 +441,7 @@ function Board() {
       <InputDialog
         isOpen={isAddColumnOpen}
         onClose={() => setIsAddColumnOpen(false)}
-        onSubmit={(title) => {
-          dispatch({
-            type: "ADD_COLUMN",
-            payload: { boardId: board.id, title },
-          });
-        }}
+        onSubmit={(title) => handleAddColumn(board.id, title)}
         title="Add New List"
         label="List Title"
         placeholder="Enter list title"

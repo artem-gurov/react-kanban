@@ -3,7 +3,7 @@ import { config } from "./config";
 
 export async function connectDB(): Promise<void> {
   try {
-    await mongoose.connect(config.mongodbUri);
+    await mongoose.connect(config.dbUri);
     console.log("✓ MongoDB connected");
   } catch (error) {
     console.error("✗ MongoDB connection error:", error);

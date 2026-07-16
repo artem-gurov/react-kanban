@@ -11,6 +11,8 @@ services:
       - mongodb_data:/data/db
     environment:
       MONGO_INITDB_DATABASE: kanban
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 8L4h1APH
     networks:
       - kanban-network
 

@@ -14,11 +14,7 @@ export function handleColumnActions(state: BoardState, action: BoardAction): Boa
             ...board,
             columns: [
               ...board.columns,
-              {
-                id: crypto.randomUUID(),
-                title: action.payload.title,
-                taskIds: [],
-              },
+              action.payload.column,
             ],
           };
         }),

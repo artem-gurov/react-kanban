@@ -1,19 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useBoardContext } from "../context/useBoardContext";
 import InputDialog from "../components/InputDialog";
 
 function BoardList() {
   const boardContext = useBoardContext();
-  const { boards, dispatch } = boardContext;
+  const { boards, loadBoards, handleAddBoard } = boardContext;
   const [isAddBoardOpen, setIsAddBoardOpen] = useState(false);
 
-  const handleAddBoard = (name: string) => {
-    dispatch({
-      type: "ADD_BOARD",
-      payload: { name },
-    });
-  };
+  useEffect(() => {
+    loadBoards();
+  }, [loadBoards]);
 
   return (
     <section className="max-w-6xl mx-auto">

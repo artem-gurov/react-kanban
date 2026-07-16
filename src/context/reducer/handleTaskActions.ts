@@ -3,8 +3,7 @@ import { type BoardState, type BoardAction } from "../BoardContext";
 export function handleTaskActions(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
     case "ADD_TASK": {
-      const { boardId, columnId, title, description, dueDate, priority } = action.payload;
-      const taskId = crypto.randomUUID();
+      const { boardId, columnId, task } = action.payload;
 
       return {
         ...state,
@@ -17,11 +16,11 @@ export function handleTaskActions(state: BoardState, action: BoardAction): Board
             ...board,
             tasks: {
               ...board.tasks,
-              [taskId]: { id: taskId, title, description, dueDate, priority },
+              [task.id]: task,
             },
             columns: board.columns.map((column) =>
               column.id === columnId
-                ? { ...column, taskIds: [...column.taskIds, taskId] }
+                ? { ...column, taskIds: [...column.taskIds, task.id] }
                 : column
             ),
           };
@@ -30,7 +29,7 @@ export function handleTaskActions(state: BoardState, action: BoardAction): Board
     }
 
     case "UPDATE_TASK": {
-      const { boardId, taskId, title, description, dueDate, priority } = action.payload;
+      const { boardId, task } = action.payload;
 
       return {
         ...state,
@@ -39,7 +38,7 @@ export function handleTaskActions(state: BoardState, action: BoardAction): Board
             return board;
           }
 
-          const existingTask = board.tasks[taskId];
+          const existingTask = board.tasks[task.id];
 
           if (!existingTask) {
             return board;
@@ -49,14 +48,7 @@ export function handleTaskActions(state: BoardState, action: BoardAction): Board
             ...board,
             tasks: {
               ...board.tasks,
-              [taskId]: {
-                ...existingTask,
-                id: existingTask.id,
-                title: title ?? existingTask.title,
-                description: description ?? existingTask.description,
-                dueDate: dueDate ?? existingTask.dueDate,
-                priority: priority ?? existingTask.priority,
-              },
+              [task.id]: task,
             },
           };
         }),

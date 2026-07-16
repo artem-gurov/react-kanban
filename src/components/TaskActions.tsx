@@ -15,10 +15,7 @@ function TaskActions({ boardId, task, onClose }: TaskActionsProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleSaveEdit = (taskData: Omit<Task, "id">) => {
-    dispatch({
-      type: "UPDATE_TASK",
-      payload: { boardId, taskId: task.id, ...taskData },
-    });
+    dispatch({ type: "UPDATE_TASK", payload: { boardId, taskId: task.id, ...taskData } });
     setIsEditModalOpen(false);
     onClose();
   };
@@ -26,10 +23,7 @@ function TaskActions({ boardId, task, onClose }: TaskActionsProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const handleDelete = () => {
-    dispatch({
-      type: "DELETE_TASK",
-      payload: { boardId, taskId: task.id },
-    });
+    dispatch({ type: "DELETE_TASK", payload: { boardId, taskId: task.id } });
     setIsDeleteOpen(false);
     onClose();
   };

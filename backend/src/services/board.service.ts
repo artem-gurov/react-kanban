@@ -1,48 +1,51 @@
 import type { Board } from "@shared/types";
-import { BoardModel } from "../../models/Board";
+import { BoardModel } from "../models/Board.model";
 
 export const boardService = {
   getAll: async (): Promise<Board[]> => {
     const boards = await BoardModel.find().lean();
     return boards.map((board) => ({
       id: board._id.toString(),
-      name: board.name,
+      title: board.title,
       columns: board.columns,
       tasks: board.tasks,
     }));
   },
 
-  getById: async (id: string): Promise<Board | undefined> => {
-    const board = await BoardModel.findById(id).lean();
-    if (!board) return undefined;
+  getById: async (id: string): Promise<Board> => {
+    const board = await BoardModel.findById(id).populate({
+      path: "columns",
+      populate: { path: "tasks" },
+    });
+    if (!board) throw new Error("Board not found");
     return {
       id: board._id.toString(),
-      name: board.name,
+      title: board.title,
       columns: board.columns,
       tasks: board.tasks,
     };
   },
 
-  create: async (name: string): Promise<Board> => {
-    const board = await BoardModel.create({ name, columns: [], tasks: {} });
+  create: async (title: string): Promise<Board> => {
+    const board = await BoardModel.create({ title, columns: [], tasks: {} });
     return {
       id: board._id.toString(),
-      name: board.name,
+      title: board.title,
       columns: board.columns,
       tasks: {},
     };
   },
 
-  update: async (id: string, name: string): Promise<Board | undefined> => {
+  update: async (id: string, title: string): Promise<Board | undefined> => {
     const board = await BoardModel.findByIdAndUpdate(
       id,
-      { name },
+      { title },
       { new: true }
     ).lean();
     if (!board) return undefined;
     return {
       id: board._id.toString(),
-      name: board.name,
+      title: board.title,
       columns: board.columns,
       tasks: board.tasks,
     };

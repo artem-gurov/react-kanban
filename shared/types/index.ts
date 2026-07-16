@@ -1,4 +1,5 @@
-export type Priority = "none" | "low" | "medium" | "high";
+export const PRIORITIES = ["none", "low", "medium", "high"] as const;
+export type Priority = typeof PRIORITIES[number];
 
 export interface Task {
   id: string;
@@ -6,24 +7,23 @@ export interface Task {
   description?: string;
   dueDate?: string;
   priority?: Priority;
-}
+};
 
 export interface Column {
   id: string;
   title: string;
-  taskIds: string[];
-}
+  tasks: string[];
+};
 
 export interface Board {
   id: string;
-  name: string;
-  columns: Column[];
-  tasks: Record<string, Task>;
-}
+  title: string;
+  columns: string[];
+};
 
 export interface BoardState {
   boards: Board[];
-}
+};
 
 export type ApiResponse<T> =
   | { success: true; data: T }
